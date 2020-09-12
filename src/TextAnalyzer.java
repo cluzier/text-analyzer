@@ -27,6 +27,7 @@ public class TextAnalyzer {
             // Remove <pre> tag
             StringBuilder fullDoc = new StringBuilder();
             String line;
+
             // first convert from bufferedReader to a string via stringBuilder and while loop
             while((line = urlContent.readLine()) != null) {
                 fullDoc.append(line);
@@ -43,8 +44,8 @@ public class TextAnalyzer {
             // sort the word frequencies
             ArrayList<HashMap.Entry<String, Integer>> sortedWordList = sortWordsByFrequency(wordFrequencies);
 
-            // print the word frequencies
-            displayWordRankings(sortedWordList);
+            // print the top 20 word frequencies
+            displayWordRankings(sortedWordList, 20);
         } catch (IOException e) {
             System.out.println("An error occurred. Unable to analyze content from URL: " + targetUrl);
         }
@@ -123,14 +124,18 @@ public class TextAnalyzer {
     /**
      * Displays the word frequencies table in console
      */
-    private static void displayWordRankings(ArrayList<HashMap.Entry<String, Integer>> sortedWordList) {
+    private static void displayWordRankings(ArrayList<HashMap.Entry<String, Integer>> sortedWordList, int limit) {
         int rank = 0;
 
         outputHeaders();
 
         for (HashMap.Entry<String, Integer> temp : sortedWordList) {
             rank++;
-            System.out.format(outputFormat, rank + ".", temp.getKey(), temp.getValue(), "\n");
+            if (rank <= limit) {
+                System.out.format(outputFormat, rank + ".", temp.getKey(), temp.getValue(), "\n");
+            } else {
+                break;
+            }
         }
     }
 
