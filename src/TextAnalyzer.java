@@ -9,7 +9,98 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-public class TextAnalyzer {
+import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+public class TextAnalyzer extends Application {
+
+    public void start(Stage PrimaryStage) {
+        PrimaryStage.setTitle("Text Analyzer");
+        PrimaryStage.setResizable(false);
+
+        //Creating a GridPane container
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(20, 0, 20, 20));
+        grid.setVgap(5);
+
+        // title
+        Text title = new Text("Text Analyzer");
+        title.setStyle("-fx-font: 24 arial;");
+
+        // url field
+        Text urlLabel = new Text("url: ");
+        TextField urlField = new TextField(targetUrl);
+        urlField.setEditable(false);
+        urlField.setDisable(true);
+        urlField.setMaxWidth(520);
+        // the line below is helpful for debugging and working with gridPane layout type
+        //grid.setGridLinesVisible(true);
+
+        // max occurrences field
+        Text occurranceLabel = new Text("max: ");
+        TextField occurranceField = new TextField();
+        occurranceField.setMaxWidth(50);
+
+        occurranceField.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue,
+                                String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    occurranceField.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+
+        // results text area
+        TextArea area = new TextArea();
+        area.setEditable(false);
+        area.setMaxHeight(200);
+        area.setMaxWidth(520);
+
+        // sets the binding for the textArea
+        StringProperty result = new SimpleStringProperty("");
+        IntegerProperty occurrences = new SimpleIntegerProperty(20);
+        area.textProperty().bind(Bindings.createStringBinding(() -> (Analyze(occurrences.intValue())), result));
+
+        occurranceField.textProperty().addListener((observable, oldValue, newValue) -> {
+            String value = newValue.isEmpty() ? "0" : newValue;
+            occurrences.set(Integer.parseInt(value));
+            result.set(result.toString());
+        });
+
+        // run button
+        Button runButton = new Button("Run Analyzer");
+        runButton.setMaxWidth(520);
+        runButton.setOnAction(e -> result.set(Analyze(occurrences.intValue())));
+
+        // add all components to grid
+        grid.add(occurranceLabel, 1, 2);
+        grid.add(occurranceField, 2, 2);
+        grid.add(title, 2, 0);
+        grid.add(area, 2, 3);
+        grid.add(runButton, 2, 4);
+        grid.add(urlLabel, 1, 1);
+        grid.add(urlField, 2, 1);
+
+        Scene scene = new Scene(grid, 600, 300);
+        PrimaryStage.setScene(scene);
+        PrimaryStage.show();
+    }
+
     // url to parse
     static String targetUrl = "https://www.gutenberg.org/files/1065/1065-h/1065-h.htm";
 
@@ -20,6 +111,12 @@ public class TextAnalyzer {
      * Main method
      */
     public static void main(String[] args) {
+        launch(args);
+        Analyze(20);
+    }
+
+    private static String Analyze(int occurrences) {
+        String output = "";
         // Fetch the URL content
         try {
             BufferedReader urlContent = fetchUrlContent();
@@ -29,11 +126,11 @@ public class TextAnalyzer {
             String line;
 
             // first convert from bufferedReader to a string via stringBuilder and while loop
-            while((line = urlContent.readLine()) != null) {
+            while ((line = urlContent.readLine()) != null) {
                 fullDoc.append(line);
             }
 
-            String removedPre = TagRemover.TagRemover(fullDoc.toString());
+            String removedPre = TagRemover.TagRemover(fullDoc.toString(), "pre");
 
             Reader r = new StringReader(removedPre);
             urlContent = new BufferedReader(r);
@@ -45,10 +142,12 @@ public class TextAnalyzer {
             ArrayList<HashMap.Entry<String, Integer>> sortedWordList = sortWordsByFrequency(wordFrequencies);
 
             // print the top 20 word frequencies
-            displayWordRankings(sortedWordList, 20);
+            //displayWordRankings(sortedWordList, occurrences);
+            output = wordRankings(sortedWordList, occurrences);
         } catch (IOException e) {
             System.out.println("An error occurred. Unable to analyze content from URL: " + targetUrl);
         }
+        return output;
     }
 
     /**
@@ -128,7 +227,6 @@ public class TextAnalyzer {
         int rank = 0;
 
         outputHeaders();
-
         for (HashMap.Entry<String, Integer> temp : sortedWordList) {
             rank++;
             if (rank <= limit) {
@@ -140,10 +238,36 @@ public class TextAnalyzer {
     }
 
     /**
+     * Returns the word frequencies table as a string
+     */
+    private static String wordRankings(ArrayList<HashMap.Entry<String, Integer>> sortedWordList, int limit) {
+        int rank = 0;
+
+        StringBuilder sb = new StringBuilder(stringHeaders());
+        for (HashMap.Entry<String, Integer> temp : sortedWordList) {
+            rank++;
+            if (rank <= limit) {
+                sb.append(String.format(outputFormat, rank, temp.getKey(), temp.getValue(), "\n"));
+            } else {
+                break;
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
      * table headers sent to console
      */
     private static void outputHeaders() {
         System.out.printf(outputFormat, "Rank", "Word", "Frequency", "\n");
     }
+
+    /**
+     * table headers returned as string
+     */
+    private static String stringHeaders() {
+        return String.format(outputFormat, "Rank", "Word", "Frequency", "\n");
+    }
+
 
 }
