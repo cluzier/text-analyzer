@@ -1,3 +1,5 @@
+package analyzer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,6 +27,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.junit.Test;
 
 public class TextAnalyzer extends Application {
 
@@ -115,11 +118,11 @@ public class TextAnalyzer extends Application {
         Analyze(20);
     }
 
-    private static String Analyze(int occurrences) {
+    protected static String Analyze(int occurrences) {
         String output = "";
         // Fetch the URL content
         try {
-            BufferedReader urlContent = fetchUrlContent();
+            BufferedReader urlContent = fetchUrlContent(targetUrl);
 
             // Remove <pre> tag
             StringBuilder fullDoc = new StringBuilder();
@@ -153,14 +156,14 @@ public class TextAnalyzer extends Application {
     /**
      * Fetch the URL to parse
      */
-    private static BufferedReader fetchUrlContent() throws IOException {
-        return new BufferedReader(new InputStreamReader(new URL(targetUrl).openStream()));
+    protected static BufferedReader fetchUrlContent(String url) throws IOException {
+        return new BufferedReader(new InputStreamReader(new URL(url).openStream()));
     }
 
     /**
      * Create a hash map to store the words extracted from the URL and their frequency
      */
-    private static HashMap<String, Integer> countWordFrequencies(BufferedReader urlContent) throws IOException {
+    protected static HashMap<String, Integer> countWordFrequencies(BufferedReader urlContent) throws IOException {
         // temp string stores each line of buffered inputUrl
         String inputLine;
         // temp array stores words from the inputUrl
@@ -192,7 +195,7 @@ public class TextAnalyzer extends Application {
     /**
      * Converts each line of the inputFile from html --> plain text
      */
-    private static String htmlToText(String inputLine) {
+    protected static String htmlToText(String inputLine) {
         return inputLine
                 .toLowerCase() // convert to lower case
                 .replaceAll("<.*?>", "") // strip html tags
@@ -206,7 +209,7 @@ public class TextAnalyzer extends Application {
     /**
      * Method to sort the wordCount HashMap by frequency values
      */
-    private static ArrayList<HashMap.Entry<String, Integer>> sortWordsByFrequency(HashMap<String, Integer> wordCount) {
+    protected static ArrayList<HashMap.Entry<String, Integer>> sortWordsByFrequency(HashMap<String, Integer> wordCount) {
         // create and populate an ArrayList with the words in the wordCount HashMap and their frequencies
         ArrayList<HashMap.Entry<String, Integer>> sortedWordList = new ArrayList<HashMap.Entry<String, Integer>>(wordCount.entrySet());
 
@@ -221,26 +224,9 @@ public class TextAnalyzer extends Application {
     }
 
     /**
-     * Displays the word frequencies table in console
-     */
-    private static void displayWordRankings(ArrayList<HashMap.Entry<String, Integer>> sortedWordList, int limit) {
-        int rank = 0;
-
-        outputHeaders();
-        for (HashMap.Entry<String, Integer> temp : sortedWordList) {
-            rank++;
-            if (rank <= limit) {
-                System.out.format(outputFormat, rank + ".", temp.getKey(), temp.getValue(), "\n");
-            } else {
-                break;
-            }
-        }
-    }
-
-    /**
      * Returns the word frequencies table as a string
      */
-    private static String wordRankings(ArrayList<HashMap.Entry<String, Integer>> sortedWordList, int limit) {
+    protected static String wordRankings(ArrayList<HashMap.Entry<String, Integer>> sortedWordList, int limit) {
         int rank = 0;
 
         StringBuilder sb = new StringBuilder(stringHeaders());
@@ -256,16 +242,9 @@ public class TextAnalyzer extends Application {
     }
 
     /**
-     * table headers sent to console
-     */
-    private static void outputHeaders() {
-        System.out.printf(outputFormat, "Rank", "Word", "Frequency", "\n");
-    }
-
-    /**
      * table headers returned as string
      */
-    private static String stringHeaders() {
+    protected static String stringHeaders() {
         return String.format(outputFormat, "Rank", "Word", "Frequency", "\n");
     }
 
