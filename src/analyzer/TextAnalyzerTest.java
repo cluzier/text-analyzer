@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Testing analysis of the html and content on page, fetching the content from the url and headers
+ */
 class TextAnalyzerTest {
     String header = "Rank    Word                 Frequency \n";
     String oneOccurance = "Rank    Word                 Frequency \n" + "1       the                  59       \n" + "";

@@ -1,16 +1,5 @@
 package analyzer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
@@ -27,10 +16,19 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import org.junit.Test;
+
+import java.io.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.StringTokenizer;
 
 public class TextAnalyzer extends Application {
 
+    /**
+     * @param PrimaryStage GUI for the project, setting up grid pane, title url field and max occurrences field
+     */
     public void start(Stage PrimaryStage) {
         PrimaryStage.setTitle("Text Analyzer");
         PrimaryStage.setResizable(false);
