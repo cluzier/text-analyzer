@@ -1,11 +1,10 @@
 package analyzer;
 
-import org.jsoup.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-/*
+/* 
  * Utility class for manipulating an HTML DOM structure
  */
 public class TagRemover {
@@ -20,3 +19,5 @@ public class TagRemover {
 		return doc.toString();
 	}
 }
+
+

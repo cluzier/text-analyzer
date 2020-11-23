@@ -1,34 +1,37 @@
 package analyzer;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertEquals;
 import java.io.IOException;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
-/**
- * Testing analysis of the html and content on page, fetching the content from the url and headers
- */
 class TextAnalyzerTest {
-    String header = "Rank    Word                 Frequency \n";
-    String oneOccurance = "Rank    Word                 Frequency \n" + "1       the                  59       \n" + "";
 
-    @Test
-    void analyze() {
-        assertEquals(oneOccurance, TextAnalyzer.Analyze(1));
-    }
-
-    @Test
-    void fetchUrlContent() {
-        try {
-            String example = "https://example.com";
-            String expected = "<!doctype html>";
-            assertEquals(expected, TextAnalyzer.fetchUrlContent(example).readLine());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
-    void stringHeaders() {
-        assertEquals(header, TextAnalyzer.stringHeaders());
-    }
+	String header = "Rank    Word                 Frequency \n";
+		
+	@Test
+	public void testStringReturns() {
+		assertEquals(header, TextAnalyzer.stringHeaders());
+	}
+	
+	@Test
+	public void testAnalyzer() throws IOException {
+		String oneOccurance = "Rank    Word                 Frequency \n" + 
+				"1       the                  59       \n";
+		assertEquals(oneOccurance, TextAnalyzer.Analyze(1));
+	}
+	
+	@Test
+	public void testFetchUrl() {
+		try {
+			String example = "https://example.com";
+			String expected = "<!doctype html>";
+			assertEquals(expected, TextAnalyzer.fetchUrlContent(example).readLine());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
+
+
+
+
