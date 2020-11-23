@@ -1,23 +1,5 @@
 package analyzer;
 
-import java.sql.Statement;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.StringTokenizer;
-import java.util.UUID;
-
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
@@ -28,22 +10,24 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+
+import java.io.*;
+import java.net.URL;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.StringTokenizer;
+import java.util.UUID;
 
 public class TextAnalyzer extends Application {
 
@@ -54,7 +38,7 @@ public class TextAnalyzer extends Application {
 	protected static void updateWordFrequency(String word, int frequency) {
 		Connection conn = null;
 
-		String str = "replace into word_occurences.word (word,frequency) values (?, ?)";
+		String str = "replace into word_occurrences.word (word,frequency) values (?, ?)";
 		try {
 			conn = JDBCMySQLConnection.getConnection();
 			PreparedStatement query = conn.prepareStatement(str);
@@ -74,11 +58,40 @@ public class TextAnalyzer extends Application {
 		}	
 	}
 	
+	
+	protected static HashMap<String, Integer> getSortedWords() {
+		Connection conn = null;
+		HashMap<String, Integer> wordCount = new HashMap<String, Integer>();
+		String str = "select * from word order by frequency desc;";
+		try {
+			
+			conn = JDBCMySQLConnection.getConnection();
+			PreparedStatement query = conn.prepareStatement(str);
+			ResultSet rs = query.executeQuery();
+			
+			while (rs.next()) {
+				wordCount.put(rs.getString("word"), rs.getInt("frequency"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return wordCount;
+	}
+	
+	
 	protected static int getCurrentWordFrequency(String word) {
 		Connection conn = null;
 		Statement statement = null;
 
-		String str = "select frequency from word_occurences.word where word = ?;";
+		String str = "select frequency from word_occurrences.word where word = ?;";
 		int freq = 0;
 		try {
 			
@@ -258,11 +271,11 @@ public class TextAnalyzer extends Application {
             countWordFrequencies(urlContent);
 
             // sort the word frequencies
-            //ArrayList<HashMap.Entry<String, Integer>> sortedWordList = sortWordsByFrequency(wordFrequencies);
+            ArrayList<HashMap.Entry<String, Integer>> sortedWordList = sortWordsByFrequency();
 
             // print the top 20 word frequencies
             //displayWordRankings(sortedWordList, occurrences);
-            //output = wordRankings(sortedWordList, occurrences);
+            output = wordRankings(sortedWordList, occurrences);
         } catch (IOException e) {
             throw new IOException("An error occurred. Unable to analyze content from URL: " + targetUrl);
         	//System.out.println("An error occurred. Unable to analyze content from URL: " + targetUrl);
@@ -324,18 +337,11 @@ public class TextAnalyzer extends Application {
     /**
      * Method to sort the wordCount HashMap by frequency values
      */
-    protected static ArrayList<HashMap.Entry<String, Integer>> sortWordsByFrequency(HashMap<String, Integer> wordCount) {
+    protected static ArrayList<HashMap.Entry<String, Integer>> sortWordsByFrequency() {
         
-    	
+    	HashMap<String, Integer> wordCount = getSortedWords();
     	// create and populate an ArrayList with the words in the wordCount HashMap and their frequencies
         ArrayList<HashMap.Entry<String, Integer>> sortedWordList = new ArrayList<HashMap.Entry<String, Integer>>(wordCount.entrySet());
-
-        // use Comparator to sort the ArrayList
-        sortedWordList.sort(new Comparator<HashMap.Entry<String, Integer>>() {
-            public int compare(HashMap.Entry<String, Integer> freq1, HashMap.Entry<String, Integer> freq2) {
-                return freq2.getValue().compareTo(freq1.getValue());
-            }
-        });
 
         return sortedWordList;
     }
